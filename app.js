@@ -3,7 +3,13 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 const cors = require('cors')
 const helmet = require('helmet')
+const dns = require('dns')
 
+
+// Pass an array of IPv4 or IPv6 addresses
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+console.log(dns.getServers()); // Verifies the active servers
 const app = express()
 
 
@@ -26,11 +32,14 @@ app.use((error, req, res, next) => {
     })
 })
 
-mongoose.connect('mongodb://localhost:27017/myapp')
-    .then(() => console.log('Database connected!'))
-    .catch(err => console.log('Error', err))
-
 const PORT = process.env.PORT || 3000
+const MONGO_URI = process.env.MONGO_URI || `mongodb://127.0.0.1:27017/myapp`
+
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch(err => console.error("❌ Error:", err));
+
 app.listen(PORT, () => {
     console.log(`server running on : http://localhost:${PORT}`)
 })
+
