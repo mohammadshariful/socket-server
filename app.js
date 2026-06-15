@@ -21,7 +21,12 @@ app.use(express.json())
 
 const userRouter = require('./routes/user.route')
 app.use('/api', userRouter);
-
+app.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Socket server is running 🚀'
+    });
+});
 
 app.use((error, req, res, next) => {
     console.error(error.stack)
