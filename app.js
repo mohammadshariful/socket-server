@@ -5,17 +5,15 @@ const cors = require('cors')
 const helmet = require('helmet')
 const dns = require('dns')
 
-
-// Pass an array of IPv4 or IPv6 addresses
 dns.setServers(['8.8.8.8', '1.1.1.1']);
+// console.log(dns.getDefaultResultOrder(), ': dns resolver name');
 
-console.log(dns.getServers()); // Verifies the active servers
 const app = express()
 
 
 app.use(helmet())
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }))
@@ -36,10 +34,13 @@ const PORT = process.env.PORT || 3000
 const MONGO_URI = process.env.MONGO_URI || `mongodb://127.0.0.1:27017/myapp`
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ Connected to MongoDB"))
+    .then(() => {
+        console.log("✅ Connected to MongoDB")
+
+        app.listen(PORT, () => {
+            console.log(`server running on : PORT:${PORT}`)
+        })
+    })
     .catch(err => console.error("❌ Error:", err));
 
-app.listen(PORT, () => {
-    console.log(`server running on : http://localhost:${PORT}`)
-})
 
