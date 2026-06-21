@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket Server Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #7c3aed;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #1e293b;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #7c3aed;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 0 0 10px 10px;
+            padding: 28px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 7px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #7c3aed;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 11px;
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            background: #6d28d9;
+        }
+
+        button[type="submit"]:active {
+            background: #5b21b6;
+        }
+
+        .response {
+            margin-top: 18px;
+            padding: 12px 14px;
+            border-radius: 7px;
+            font-size: 0.82rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+            font-family: 'Courier New', monospace;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .response.success {
+            background: #052e16;
+            color: #4ade80;
+            border: 1px solid #166534;
+        }
+
+        .response.error {
+            background: #2d0a0a;
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+        }
+
+        .token-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 7px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .token-bar span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .token-bar .badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #7c3aed;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .token-bar .badge.none {
+            background: #475569;
+        }
+
+        .load-btn {
+            width: 100%;
+            padding: 11px;
+            background: #0f172a;
+            color: #7c3aed;
+            border: 1px solid #7c3aed;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .load-btn:hover {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        .users-list {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .user-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 7px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+
+        .user-card .user-name {
+            font-weight: 600;
+            color: #a78bfa;
+        }
+
+        .user-card .user-email {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Socket Server API Test</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            <button class="tab-btn" onclick="switchTab('users')">Users</button>
+        </div>
+
+        <div class="card">
+            <!-- LOGIN -->
+            <div id="tab-login" class="tab-panel active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="login-email" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="••••••" required />
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="login-response" class="response"></div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="load-btn" style="margin-bottom:0" onclick="handleRefreshToken()">Refresh
+                        Token</button>
+                    <button class="load-btn" style="margin-bottom:0;color:#f87171;border-color:#f87171"
+                        onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- REGISTER -->
+            <div id="tab-register" class="tab-panel">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="reg-name" placeholder="John Doe" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="reg-age" placeholder="25" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="reg-email" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span style="color:#6b7280;font-weight:400">(min 6 chars)</span></label>
+                        <input type="password" id="reg-password" placeholder="••••••" required minlength="6" />
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+                <div id="register-response" class="response"></div>
+            </div>
+
+            <!-- USERS -->
+            <div id="tab-users" class="tab-panel">
+                <div class="token-bar">
+                    <span id="token-preview">No token — login first</span>
+                    <span class="badge none" id="token-badge">NO TOKEN</span>
+                </div>
+                <button class="load-btn" onclick="loadUsers()">Load All Users</button>
+                <div id="users-response" class="response"></div>
+                <div id="users-list" class="users-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE = '/api';
+        let accessToken = localStorage.getItem('accessToken') || null;
+
+        updateTokenBar();
+
+        function updateTokenBar() {
+            const preview = document.getElementById('token-preview');
+            const badge = document.getElementById('token-badge');
+            if (accessToken) {
+                preview.textContent = accessToken.slice(0, 40) + '…';
+                badge.textContent = 'TOKEN OK';
+                badge.className = 'badge';
+            } else {
+                preview.textContent = 'No token — login first';
+                badge.textContent = 'NO TOKEN';
+                badge.className = 'badge none';
+            }
+        }
+
+        function showResponse(id, data, isError) {
+            const el = document.getElementById(id);
+            el.textContent = JSON.stringify(data, null, 2);
+            el.className = 'response ' + (isError ? 'error' : 'success');
+            el.style.display = 'block';
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { showResponse('login-response', data, true); return; }
+
+                if (data.accessToken) {
+                    accessToken = data.accessToken;
+                    localStorage.setItem('accessToken', accessToken);
+                    updateTokenBar();
+                }
+                showResponse('login-response', data, false);
+            } catch (err) {
+                showResponse('login-response', { error: err.message }, true);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const age = document.getElementById('reg-age').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            const body = { name, email, password };
+            if (age) body.age = Number(age);
+
+            try {
+                const res = await fetch(`${BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                showResponse('register-response', data, !res.ok);
+            } catch (err) {
+                showResponse('register-response', { error: err.message }, true);
+            }
+        }
+
+        async function handleRefreshToken() {
+            try {
+                const res = await fetch(`${BASE}/refresh-token`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) { showResponse('login-response', data, true); return; }
+
+                if (data.accessToken) {
+                    accessToken = data.accessToken;
+                    localStorage.setItem('accessToken', accessToken);
+                    updateTokenBar();
+                }
+                showResponse('login-response', data, false);
+            } catch (err) {
+                showResponse('login-response', { error: err.message }, true);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const res = await fetch(`${BASE}/logout`, {
+                    method: 'POST',
+                    // credentials: 'include'
+                });
+                const data = await res.json();
+                accessToken = null;
+                localStorage.removeItem('accessToken');
+                updateTokenBar();
+                showResponse('login-response', data, !res.ok);
+            } catch (err) {
+                showResponse('login-response', { error: err.message }, true);
+            }
+        }
+
+        async function loadUsers() {
+            const listEl = document.getElementById('users-list');
+            listEl.innerHTML = '';
+
+            if (!accessToken) {
+                showResponse('users-response', { error: 'No token. Please login first.' }, true);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${BASE}/users`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const data = await res.json();
+                if (!res.ok) { showResponse('users-response', data, true); return; }
+
+                document.getElementById('users-response').style.display = 'none';
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(user => {
+                        const card = document.createElement('div');
+                        card.className = 'user-card';
+                        card.innerHTML = `
+                            <div class="user-name">${user.name || '—'}</div>
+                            <div class="user-email">${user.email}</div>
+                            ${user.age ? `<div style="color:#64748b;font-size:0.75rem;margin-top:2px">Age: ${user.age}</div>` : ''}
+                        `;
+                        listEl.appendChild(card);
+                    });
+                } else {
+                    showResponse('users-response', data, false);
+                }
+            } catch (err) {
+                showResponse('users-response', { error: err.message }, true);
+            }
+        }
+    </script>
+</body>
+
+</html>

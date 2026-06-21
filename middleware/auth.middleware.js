@@ -2,12 +2,13 @@ const jwt = require('jsonwebtoken')
 const SECRET = process.env.JWT_SECRET
 
 const authMiddleware = (req, res, next) => {
-    const token = req.headers.authorization;
-    if (!token) {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
         return res.status(401).json({ message: 'access denied' })
     }
 
     try {
+        const token = authorization.split(' ')[1];
         const decode = jwt.verify(token, SECRET)
         req.user = decode;
         next()

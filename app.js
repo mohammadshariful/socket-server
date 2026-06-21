@@ -4,16 +4,18 @@ require('dotenv').config()
 const cors = require('cors')
 const helmet = require('helmet')
 const dns = require('dns')
+const cookieParser = require('cookie-parser');
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 // console.log(dns.getDefaultResultOrder(), ': dns resolver name');
 
 const app = express()
 
-
+app.use(cookieParser())
 app.use(helmet())
 app.use(cors({
     origin: '*',
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }))
