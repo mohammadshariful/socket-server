@@ -2,12 +2,39 @@ const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
     name: String,
-    password: String,
-    email: String,
+    password: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
     age: Number,
     refreshToken: {
         type: String,
         default: null
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationTokenHash: {
+        type: String,
+        default: null
+    },
+    verificationTokenExpire: {
+        type: Date,
+        default: null
+    },
+    lastVerificationSentAt: {
+        type: Date,
+        default: null
     }
+}, {
+    timestamps: true
 })
 module.exports = mongoose.model('User', userSchema)
