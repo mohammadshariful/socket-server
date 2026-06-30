@@ -33,6 +33,24 @@ const userSchema = new mongoose.Schema({
     lastVerificationSentAt: {
         type: Date,
         default: null
+    },
+    // forgot password token and expiration
+    resetPasswordTokenHash: {
+        type: String,
+        default: null
+    },
+    resetPasswordTokenExpire: {
+        type: Date,
+        default: null
+    },
+    lastResetPasswordSentAt: {
+        type: Date,
+        default: null
+    },
+    //refresh token
+    refreshToken: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true

@@ -15,4 +15,12 @@ const globalLimiter = rateLimiter({
     }
 })
 
-module.exports = { loginLimiter, globalLimiter }
+// IP-based rate limit — general abuse prevention
+const forgotPasswordLimiter = rateLimiter({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 3,                  // একই IP থেকে সর্বোচ্চ 3 বার
+    message: "Too many requests. Please try again later.",
+});
+
+
+module.exports = { loginLimiter, globalLimiter, forgotPasswordLimiter }
